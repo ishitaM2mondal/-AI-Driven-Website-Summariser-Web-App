@@ -26,6 +26,11 @@ export default function App() {
     }
   };
 
+  /* ===================== */
+  /* MARKDOWN PARSER */
+  /* ===================== */
+
+
   const renderMarkdown = (text) => {
     const lines = text.split("\n");
 
