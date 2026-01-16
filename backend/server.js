@@ -12,8 +12,18 @@ app.use(express.json());
 
 async function fetchWebsiteText(url) {
   const browser = await puppeteer.launch({
-    headless: "new", // use false if you want to see browser
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    headless: "new",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--disable-gpu"
+    ],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
+                    puppeteer.executablePath()
   });
 
   try {
@@ -23,7 +33,6 @@ async function fetchWebsiteText(url) {
       timeout: 60000,
     });
 
-    // Extract visible text
     const text = await page.evaluate(() => {
       return document.body.innerText;
     });
