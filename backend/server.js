@@ -21,9 +21,8 @@ async function fetchWebsiteText(url) {
       "--no-first-run",
       "--no-zygote",
       "--disable-gpu"
-    ],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
-                    puppeteer.executablePath()
+    ]
+    // Puppeteer will find installed Chrome
   });
 
   try {
@@ -46,6 +45,7 @@ async function fetchWebsiteText(url) {
     await browser.close();
   }
 }
+
 
 app.post("/summarize", async (req, res) => {
   try {
