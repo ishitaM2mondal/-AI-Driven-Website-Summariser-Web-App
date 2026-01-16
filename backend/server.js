@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import puppeteer from "puppeteer";
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -10,9 +13,40 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function findChrome() {
+  const baseDir = './chrome-cache';
+  const chromeDir = path.join(baseDir, 'chrome');
+  
+  if (fs.existsSync(chromeDir)) {
+    const versions = fs.readdirSync(chromeDir);
+    if (versions.length > 0) {
+      const chromePath = path.join(chromeDir, versions[0], 'chrome-linux64', 'chrome');
+      if (fs.existsSync(chromePath)) {
+        return chromePath;
+      }
+    }
+  }
+  
+  return null;
+}
+
 async function fetchWebsiteText(url) {
+  const chromePath = findChrome();
+  
+  if (!chromePath) {
+    throw new Error('Chrome executable not found. Make sure build script ran successfully.');
+  }
+  
+  console.log('Using Chrome at:', chromePath);
+  
   const browser = await puppeteer.launch({
     headless: "new",
+    executablePath: chromePath,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -22,7 +56,6 @@ async function fetchWebsiteText(url) {
       "--no-zygote",
       "--disable-gpu"
     ]
-    // Puppeteer will find installed Chrome
   });
 
   try {
@@ -45,6 +78,7 @@ async function fetchWebsiteText(url) {
     await browser.close();
   }
 }
+
 
 
 app.post("/summarize", async (req, res) => {
